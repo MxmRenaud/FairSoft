@@ -97,8 +97,14 @@ fi
 if [ "$build_MQOnly" = "yes" ]
 then
     mqonly=1
+    mqdepsonly=0
+elif [ "$build_MQOnly" = "depsonly" ]
+then
+    mqonly=1
+    mqdepsonly=1
 else
     mqonly=0
+    mqdepsonly=0
 fi
 
 if [ "$install_sim" = "yes" ]
@@ -114,16 +120,13 @@ if [ "$build_MQOnly" = "no" ]
 then
      if [ "$build_root6" = "yes" ]
      then
-       pluto=0
        export Root_Version=6
      elif [ "$build_root6" = "no" ]
      then
-       pluto=1
        export Root_Version=5
      fi
  elif [ "$build_MQOnly" = "yes" ];
  then
-    pluto=0
     export Root_Version=0
 fi
 
@@ -169,6 +172,7 @@ echo "Architecture        : " $arch | tee -a $logfile
 echo "G4System            : " $geant4_system | tee -a $logfile
 echo "g4_data_files       : " $geant4_data_files | tee -a $logfile
 echo "g4_get_data         : " $geant4_get_data | tee -a $logfile
+echo "build G4 with MT    : " $geant4mt | tee -a $logfile
 echo "Number of parallel    " | tee -a $logfile
 echo "processes for build : " $number_of_processes | tee -a $logfile
 echo "Installation Directory: " $SIMPATH_INSTALL | tee -a $logfile
@@ -210,6 +214,13 @@ fi
 if [ "$check" = "1" ];
 then
   source scripts/install_gsl.sh
+fi
+
+##################### Vc #############################################
+
+if [ "$check" = "1" ];
+then
+  source scripts/install_vc.sh
 fi
 
 ############ ICU libraries ###############################
@@ -295,13 +306,6 @@ then
   fi
 fi
 
-##################### Pluto #############################################
-
-if [ "$check" = "1" -a "$onlyreco" = "0" -a "$pluto" = "1"  -a "$mqonly" = "0" ];
-then
-     source scripts/install_pluto.sh
-fi
-
 ##################### Geant 3 VMC #############################################
 
 if [ "$check" = "1" -a "$onlyreco" = "0" -a "$mqonly" = "0" ];
@@ -372,6 +376,13 @@ then
   source scripts/install_nanomsg.sh
 fi
 
+##################### yaml-cpp ##################################################
+
+if [ "$check" = "1" ];
+then
+  source scripts/install_yamlcpp.sh
+fi
+
 ##################### DDS ###############################################
 
 if [ "$check" = "1" ];
@@ -386,9 +397,23 @@ then
   source scripts/install_fairlogger.sh
 fi
 
+##################### OFI ###############################################
+
+#if [ "$check" = "1" -a "$platform" = "linux" ];
+#then
+#  source scripts/install_ofi.sh
+#fi
+
+##################### asiofi ###############################################
+
+#if [ "$check" = "1" -a "$platform" = "linux" ];
+#then
+#  source scripts/install_asiofi.sh
+#fi
+
 ##################### FairMQ ###############################################
 
-if [ "$check" = "1" ];
+if [ "$check" = "1" -a "$mqdepsonly" = "0" ];
 then
   source scripts/install_fairmq.sh
 fi

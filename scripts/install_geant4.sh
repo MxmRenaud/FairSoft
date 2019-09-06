@@ -8,16 +8,10 @@
 if [ ! -d  $SIMPATH/transport/geant4 ];
 then
   cd $SIMPATH/transport
-  if [ ! -e $GEANT4VERSION.tar.gz ];
-  then
-    echo "*** Downloading geant4 sources ***"
-    download_file $GEANT4_LOCATION/$GEANT4VERSION.tar.gz
-  fi
-  untar geant4 $GEANT4VERSION.tar.gz
-  if [ -d $GEANT4VERSION ];
-  then
-    ln -s $GEANT4VERSION geant4
-  fi
+  git clone $GEANT4_LOCATION
+
+  cd geant4
+  git checkout $GEANT4VERSION
 fi
 
 # Full output during compilation and linking to check for the
@@ -61,6 +55,13 @@ then
     geant4_opengl=""
   fi
 
+  if [ "$geant4mt" = "yes" ];
+  then
+    g4mt="-DGEANT4_BUILD_MULTITHREADED=ON"
+  else
+    g4mt="-DGEANT4_BUILD_MULTITHREADED=OFF"
+  fi
+
   cmake -DCMAKE_INSTALL_PREFIX=$install_prefix \
         -DCMAKE_INSTALL_LIBDIR=$install_prefix/lib \
         -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
@@ -69,7 +70,8 @@ then
         -DGEANT4_USE_G3TOG4=ON \
         -DGEANT4_BUILD_STORE_TRAJECTORY=OFF \
         -DGEANT4_BUILD_VERBOSE_CODE=ON \
-        $geant4_opengl \
+        -DGEANT4_BUILD_TLS_MODEL="global-dynamic" \
+        $geant4_opengl $g4mt\
         $install_data  $geant4_cpp ../
 
   $MAKE_command -j$number_of_processes  install
@@ -104,8 +106,8 @@ then
     if [ ! -L $install_prefix/share/Geant4/data/G4NDL ]; then
       ln -s $install_prefix/share/Geant4/data/${G4NDL_VERSION} $install_prefix/share/Geant4/data/G4NDL
     fi
-    if [ ! -L $install_prefix/share/Geant4/data/G4NEUTRONXS ]; then
-      ln -s $install_prefix/share/Geant4/data/${G4NEUTRONXS_VERSION} $install_prefix/share/Geant4/data/G4NEUTRONXS
+    if [ ! -L $install_prefix/share/Geant4/data/G4PARTICLEXS ]; then
+      ln -s $install_prefix/share/Geant4/data/${G4PARTICLEXS_VERSION} $install_prefix/share/Geant4/data/G4PARTICLEXS
     fi
     if [ ! -L $install_prefix/share/Geant4/data/G4PII ]; then
       ln -s $install_prefix/share/Geant4/data/${G4PII_VERSION} $install_prefix/share/Geant4/data/G4PII
@@ -121,6 +123,9 @@ then
     fi
     if [ ! -L $install_prefix/share/Geant4/data/RealSurface ]; then
       ln -s $install_prefix/share/Geant4/data/${RealSurface_VERSION} $install_prefix/share/Geant4/data/RealSurface
+    fi
+    if [ ! -L $install_prefix/share/Geant4/data/G4INCL ]; then
+      ln -s $install_prefix/share/Geant4/data/${G4INCL_VERSION} $install_prefix/share/Geant4/data/G4INCL
     fi
 
   fi
